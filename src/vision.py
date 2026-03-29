@@ -20,8 +20,8 @@ class Vision:
         # 缩放模板
         #screen_width = screen.shape[1]
         carrot_width = self.screen_width/6
-        scale = carrot_width/src_template.shape[1]
-        self.template = cv2.resize(src_template, None, fx=scale, fy=scale)
+        scale = carrot_width/self.src_template.shape[1]
+        self.template = cv2.resize(self.src_template, None, fx=scale, fy=scale)
         # 转换为灰度图
         self.template_gray = cv2.cvtColor(self.template, cv2.COLOR_BGR2GRAY)
 
@@ -32,7 +32,7 @@ class Vision:
         :param show_result: 识别结果可视化，默认 False
         """
         self.screen = cv2.imread(screen_path)
-        self.screen_gray = cv2.cvtColor(screen, cv2.COLOR_BGR2GRAY)
+        self.screen_gray = cv2.cvtColor(self.screen, cv2.COLOR_BGR2GRAY)
         # 使用模板匹配（方法选择：TM_CCOEFF_NORMED 更适合颜色对比）
         result = cv2.matchTemplate(self.screen_gray, self.template_gray, cv2.TM_CCOEFF_NORMED)
         loc = np.where(result >= self.threshold)
@@ -56,16 +56,11 @@ class Vision:
             if show_result:
                 # 绘制矩形框
                 for pt in valid_position:
-                    cv2.rectangle(screen, pt, (pt[0] + self.template.shape[1], pt[1] + self.template.shape[0]), (0, 255, 0), 2)
+                    cv2.rectangle(self.screen, pt, (pt[0] + self.template.shape[1], pt[1] + self.template.shape[0]), (0, 255, 0), 2)
                     print(f"\n找到一个对象, 中心点坐标({pt[0]+self.template.shape[1]/2},{pt[1]+self.template.shape[0]/2})")
-                cv2.imshow('Result', screen)
+                cv2.imshow('Result', self.screen)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
-
-
-# 加载图像
-src_template = cv2.imread('./img/carrot.png')
-screen = cv2.imread('./img/test1.png')
 
 # 使用示例
 if __name__ == "__main__":
