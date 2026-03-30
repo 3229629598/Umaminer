@@ -25,13 +25,17 @@ class Vision:
         # 转换为灰度图
         self.template_gray = cv2.cvtColor(self.template, cv2.COLOR_BGR2GRAY)
 
-    def loop(self, screen_path: str, show_result=False):
+    def loop(self, *, screen_path: str | None = None, img_cv: cv2.Mat | None = None, show_result: bool = False):
         """
         循环函数
         :param screen_path: 识别图像路径
+        :param img_cv: 直接输入 OpenCV 图像, 若输入 screen_path, 则该参数无效
         :param show_result: 识别结果可视化，默认 False
         """
-        self.screen = cv2.imread(screen_path)
+        if screen_path == None:
+            self.screen = img_cv
+        else:
+            self.screen = cv2.imread(screen_path)
         self.screen_gray = cv2.cvtColor(self.screen, cv2.COLOR_BGR2GRAY)
         # 使用模板匹配（方法选择：TM_CCOEFF_NORMED 更适合颜色对比）
         result = cv2.matchTemplate(self.screen_gray, self.template_gray, cv2.TM_CCOEFF_NORMED)
@@ -39,6 +43,9 @@ class Vision:
         if len(loc[0])==0:
             if self.is_carrot == True:
                 self.is_carrot = False
+            else:
+                if show_result:
+                    print("找不到对象")
             return
         else:
             # 筛选横坐标在 20 到 25 之间的匹配点
@@ -46,7 +53,7 @@ class Vision:
             for pt in zip(*loc[::-1]):  # pt[0] 是 x 坐标, pt[1] 是 y 坐标
                 x, y = pt
                 x_min = self.screen_width*20/450
-                x_max = self.screen_width*25/450
+                x_max = self.screen_width*250/450
                 if self.is_carrot == False and x_min <= x <= x_max:
                     self.is_carrot = True
                     self.drop_cnt+=1
@@ -65,4 +72,4 @@ class Vision:
 # 使用示例
 if __name__ == "__main__":
     detector = Vision(template_path = './img/carrot.png')
-    positions = detector.loop(screen_path = './img/test1.png', show_result = True)
+    detector.loop(screen_path = './img/test1.png', show_result = True)
