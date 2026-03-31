@@ -13,23 +13,25 @@ class Vision:
         self.screen_width = screen_width
         self.screen = None
         self.screen_gray = None
-        self.is_carrot = False
+        self.is_drop = False
         self.drop_cnt = 0
         # 加载模板
         self.src_template = cv2.imread(template_path)
         # 缩放模板
         #screen_width = screen.shape[1]
-        carrot_width = self.screen_width/6
-        scale = carrot_width/self.src_template.shape[1]
+        target_width = self.screen_width/6
+        scale = target_width/self.src_template.shape[1]
         self.template = cv2.resize(self.src_template, None, fx=scale, fy=scale)
         # 转换为灰度图
         self.template_gray = cv2.cvtColor(self.template, cv2.COLOR_BGR2GRAY)
 
-    def loop(self, *, screen_path: str | None = None, img_cv: cv2.Mat | None = None, show_result: bool = False):
+    def loop(self, *, screen_path: str | None = None, img_cv: cv2.Mat | None = None, x_min: int = 20, x_max: int = 25, show_result: bool = False):
         """
         循环函数
         :param screen_path: 识别图像路径
         :param img_cv: 直接输入 OpenCV 图像, 若输入 screen_path, 则该参数无效
+        :param x_min: 识别结果的横坐标最小值
+        :param x_max: 识别结果的横坐标最大值
         :param show_result: 识别结果可视化，默认 False
         """
         if screen_path == None:
@@ -41,8 +43,8 @@ class Vision:
         result = cv2.matchTemplate(self.screen_gray, self.template_gray, cv2.TM_CCOEFF_NORMED)
         loc = np.where(result >= self.threshold)
         if len(loc[0])==0:
-            if self.is_carrot == True:
-                self.is_carrot = False
+            if self.is_drop == True:
+                self.is_drop = False
             else:
                 if show_result:
                     print("找不到对象")
@@ -52,14 +54,14 @@ class Vision:
             valid_position = []
             for pt in zip(*loc[::-1]):  # pt[0] 是 x 坐标, pt[1] 是 y 坐标
                 x, y = pt
-                x_min = self.screen_width*20/450
-                x_max = self.screen_width*250/450
-                if self.is_carrot == False and x_min <= x <= x_max:
-                    self.is_carrot = True
+                scr_x_min = self.screen_width * x_min / 450
+                scr_x_max = self.screen_width * x_max / 450
+                if self.is_drop == False and scr_x_min <= x <= scr_x_max:
+                    self.is_drop = True
                     self.drop_cnt+=1
                     valid_position.append(pt)
-                if self.is_carrot == True and not(x_min <= x <= x_max):
-                    self.is_carrot = False
+                if self.is_drop == True and not(scr_x_min <= x <= scr_x_max):
+                    self.is_drop = False
             if show_result:
                 # 绘制矩形框
                 for pt in valid_position:

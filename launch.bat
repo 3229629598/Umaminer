@@ -8,10 +8,10 @@ echo ==============================
 call conda activate umaminer
 
 :: 如果 conda 不在系统PATH，用下面这一行，替换成你的 conda 路径
-:: call D:\miniconda3\Scripts\activate.bat wx_backend
+:: call D:\miniconda3\Scripts\activate.bat umaminer
 
 if %errorlevel% neq 0 (
-    echo 错误：conda 环境 umaminer 激活失败！
+    echo 错误: conda 环境 umaminer 激活失败！
     pause
     exit /b 1
 )
